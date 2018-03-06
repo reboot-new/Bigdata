@@ -25,6 +25,7 @@ import com.alpha.tv.entity.WIC;
  * describe:	解析日志文件提取有用信息
  * author：		tan_alpha
  * create time:	2018-03-04
+ * modify time:	2018-03-06
  * */
 public class ParseLogMapReduce extends Configured implements Tool {
 
