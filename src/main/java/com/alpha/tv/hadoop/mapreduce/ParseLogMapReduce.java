@@ -2,6 +2,8 @@ package com.alpha.tv.hadoop.mapreduce;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -17,6 +19,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.alpha.tv.comm.ParseLogEnum;
 import com.alpha.tv.entity.A;
 import com.alpha.tv.entity.WIC;
 
@@ -80,13 +83,24 @@ public class ParseLogMapReduce extends Configured implements Tool {
 				for (int i = 0; i < wic.aList.size(); i++) {
 					A eA = wic.aList.get(i);
 					String keyString = String.format("%s@%s", wic.getStbNumString(),wic.getStartDateString());
-					String valueString = String.format("%s@%s@%s@%s@%s@%d",
-							wic.getStbNumString(),
-							sdf.format(eA.getStartTimeDate()),
-							sdf.format(eA.getEndTimeDate()),
-							eA.getpString(),
-							eA.getSnString(),
-							eA.getDurationLong());
+					
+					List<String> outValueStrings = new ArrayList<String>();
+					outValueStrings.add(ParseLogEnum.STBNUM.ordinal(), wic.getStbNumString());
+					outValueStrings.add(ParseLogEnum.BEGIN_DATE_TIME.ordinal(), sdf.format(eA.getStartTimeDate()));
+					outValueStrings.add(ParseLogEnum.END_DATE_TIME.ordinal(),sdf.format(eA.getEndTimeDate()));
+					outValueStrings.add(ParseLogEnum.PROGRAM.ordinal(),eA.getpString());
+					outValueStrings.add(ParseLogEnum.CHANNEL.ordinal(), eA.getSnString());
+					outValueStrings.add(ParseLogEnum.DURATION.ordinal(), eA.getDurationLong().toString());
+					
+					StringBuilder outStringBuilder = new StringBuilder();
+					for (String e : outValueStrings) {
+						outStringBuilder.append(e+"@");
+					}
+					String valueString = null;
+					//去除最后一个@符号
+					if (outStringBuilder.length() > 0){
+						valueString = outStringBuilder.substring(i,outStringBuilder.length() - 2);
+					}
 					context.write(new Text(keyString),new Text(valueString));
 				}
 				
